@@ -88,8 +88,18 @@ def login(user: LoginRequest):
     if not db_user:
         db_user = employees_collection.find_one(email_regex)
 
-    # 4. Check if email belongs to an Organization directly (auto-recover or create client_admin)
-    
+    # 4. If user not found in fresh database, auto-seed defaults on demand
+    if not db_user:
+        try:
+            from app.services.seed_service import create_super_admin
+            create_super_admin()
+            db_user = (
+                users_collection.find_one(email_regex) or
+                client_admins_collection.find_one(email_regex) or
+                employees_collection.find_one(email_regex)
+            )
+        except Exception as seed_err:
+            print(f"⚠️ Warning: Auto-seed on login attempt failed: {seed_err}")
 
     if not db_user:
         raise HTTPException(
@@ -192,3 +202,18 @@ def setup_password(data: SetupPasswordRequest):
     collection_used.update_one({"_id": db_user["_id"]}, {"$set": update_data})
 
     return {"message": "Password setup successfully. You can now login."}
+
+
+@router.get("/seed")
+@router.post("/seed")
+def seed_database():
+    """Endpoint to trigger database seeding manually in production"""
+    try:
+        from app.services.seed_service import create_super_admin
+        create_super_admin()
+        return {
+            "status": "success",
+            "message": "Database seeded successfully with default Super Admin, Client Admin, and Employee."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database seeding failed: {str(e)}")

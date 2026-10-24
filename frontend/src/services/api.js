@@ -1,9 +1,11 @@
 // Dynamic API base URL: respects VITE_API_BASE_URL env, or falls back to port 8000 on localhost, or relative path in production
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL !== undefined
+const rawBase = import.meta.env.VITE_API_BASE_URL !== undefined
   ? import.meta.env.VITE_API_BASE_URL
   : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
       ? `http://${window.location.hostname}:8000`
       : '');
+
+export const API_BASE_URL = (rawBase || '').replace(/\/+$/, '');
 
 export async function request(endpoint, options = {}) {
   const token = localStorage.getItem('access_token') || localStorage.getItem('token');
@@ -16,7 +18,8 @@ export async function request(endpoint, options = {}) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const url = API_BASE_URL ? `${API_BASE_URL}${endpoint}` : endpoint;
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = API_BASE_URL ? `${API_BASE_URL}${cleanEndpoint}` : cleanEndpoint;
   const response = await fetch(url, {
     ...options,
     headers,

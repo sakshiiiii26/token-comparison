@@ -9,6 +9,7 @@ import EmployeeDashboard from './pages/EmployeeDashboard';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import { CurrencyProvider, useCurrency } from './context/CurrencyContext';
+import NotificationBell from './components/NotificationBell';
 
 function Navigation() {
   const location = useLocation();
@@ -56,6 +57,7 @@ function Navigation() {
         )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {storedRole === 'client_admin' && <NotificationBell />}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-main)', padding: '0.2rem 0.5rem', borderRadius: '6px', border: '1px solid var(--primary)' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>CURRENCY:</span>
           <select 

@@ -1,7 +1,12 @@
-const API_BASE_URL = `http://${window.location.hostname}:8000`;
+// Dynamic API base URL: respects VITE_API_BASE_URL env, or falls back to port 8000 on localhost, or relative path in production
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL !== undefined
+  ? import.meta.env.VITE_API_BASE_URL
+  : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? `http://${window.location.hostname}:8000`
+      : '');
 
-async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('access_token');
+export async function request(endpoint, options = {}) {
+  const token = localStorage.getItem('access_token') || localStorage.getItem('token');
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
@@ -11,7 +16,8 @@ async function request(endpoint, options = {}) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = API_BASE_URL ? `${API_BASE_URL}${endpoint}` : endpoint;
+  const response = await fetch(url, {
     ...options,
     headers,
   });
@@ -70,8 +76,6 @@ export const clientAdminAPI = {
   }),
 };
 
-
-
 export const employeeAPI = {
   getEmployees: () => request('/employee/all'),
   getEmployee: (id) => request(`/employee/${id}`),
@@ -87,6 +91,7 @@ export const employeeAPI = {
 
 export const modelsAPI = {
   getAllModels: () => request('/models/all'),
+  getMediaRates: () => request('/models/media-rates'),
   createModel: (modelData) => request('/models/create', {
     method: 'POST',
     body: JSON.stringify(modelData),
@@ -126,4 +131,9 @@ export const chatAPI = {
     method: 'POST',
     body: JSON.stringify(chatData),
   }),
+};
+
+export const notificationAPI = {
+  getNotifications: () => request('/notifications/'),
+  markAsRead: (id) => request(`/notifications/${id}/read`, { method: 'PUT' }),
 };

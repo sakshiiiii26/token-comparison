@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { superAdminAPI, clientAdminAPI, employeeAPI, modelsAPI, recommendationAPI, usageLogAPI } from '../services/api';
 import { useCurrency } from '../context/CurrencyContext';
-import { Building2, Users, Database, TrendingUp, CheckCircle, Code, ShieldCheck, Activity, Plus, RefreshCw, Terminal, PhoneCall, MessageSquare } from 'lucide-react';
+import { Building2, Users, Database, TrendingUp, CheckCircle, Code, ShieldCheck, Activity, Plus, RefreshCw, Terminal, PhoneCall, MessageSquare, Calculator } from 'lucide-react';
+import MediaCostEstimator from '../components/MediaCostEstimator';
 
 export default function ClientAdminDashboard() {
   const [organizations, setOrganizations] = useState([]);
@@ -51,6 +52,7 @@ export default function ClientAdminDashboard() {
   const [selectedTokenPlatform, setSelectedTokenPlatform] = useState('Groq');
   const [empForm, setEmpForm] = useState({ name: '', email: '', phone: '', password: 'Password@123' });
   const [msg, setMsg] = useState({ type: '', text: '' });
+  const [showEstimator, setShowEstimator] = useState(false);
   const { formatCurrency, currency, EXCHANGE_RATES } = useCurrency();
 
   const storedOrgId = localStorage.getItem('organization_id');
@@ -343,6 +345,9 @@ export default function ClientAdminDashboard() {
         <div style={{ display: 'flex', gap: '10px' }}>
           <button className="btn btn-secondary" onClick={fetchData} title="Refresh Live Data">
             <RefreshCw size={18} />
+          </button>
+          <button className="btn btn-secondary" onClick={() => setShowEstimator(true)}>
+            <Calculator size={18} /> Cost Estimator
           </button>
           <button className="btn btn-secondary" onClick={() => setShowPlanModal(true)}>
             <Plus size={18} /> Request Plan Upgrade
@@ -1672,7 +1677,7 @@ const response = await fetch("http://${window.location.hostname}:8000/gateway/v1
                   This amount will be deducted from the Organization's Available balance for the selected platform.
                 </p>
                 <input
-                  type="number" className="input" required min="1" step="1"
+                  type="number" className="input" required min="0.000001" step="any"
                   value={addTokenAmount} onChange={e => setAddTokenAmount(e.target.value)}
                   style={{ border: '1px solid var(--warning)' }}
                 />
@@ -1685,6 +1690,7 @@ const response = await fetch("http://${window.location.hostname}:8000/gateway/v1
           </div>
         </div>
       )}
+      {showEstimator && <MediaCostEstimator onClose={() => setShowEstimator(false)} />}
     </div>
   );
 }

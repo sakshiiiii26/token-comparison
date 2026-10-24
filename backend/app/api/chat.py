@@ -12,7 +12,8 @@ from app.database.collections import (
     organizations_collection,
     usage_logs_collection,
     client_admins_collection,
-    users_collection
+    users_collection,
+    notifications_collection
 )
 from app.api.dependencies import get_current_user
 
@@ -93,6 +94,23 @@ def chat_completions(req: ChatRequest):
         available_tokens = platform_alloc.get("available", 0)
         
         if available_tokens < 200:
+            existing_notif = notifications_collection.find_one({
+                "organization_id": org_id,
+                "employee_id": emp_id,
+                "platform": platform_provider,
+                "is_read": False
+            })
+            if not existing_notif:
+                emp_name = employee.get("name", "Unknown Employee")
+                notifications_collection.insert_one({
+                    "organization_id": org_id,
+                    "employee_id": emp_id,
+                    "employee_name": emp_name,
+                    "platform": platform_provider,
+                    "message": f"Employee {emp_name} has exhausted their limit for {platform_provider}.",
+                    "is_read": False,
+                    "created_at": datetime.utcnow()
+                })
             raise HTTPException(status_code=403, detail=f"Token limit exhausted for {platform_provider}. You have less than 200 tokens remaining, which is insufficient to generate a response.")
             
         dynamic_max_tokens = min(1000, max(10, int(available_tokens - 100)))

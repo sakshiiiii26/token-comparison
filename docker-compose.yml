@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: binjwa-mongodb
+    restart: unless-stopped
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ${DATABASE_NAME:-binjwa_ai_cost}
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - binjwa-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: binjwa-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - DATABASE_NAME=${DATABASE_NAME:-binjwa_ai_cost}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-binjwa_production_secret_key_change_me}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - HOST=0.0.0.0
+      - PORT=8000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - binjwa-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-}
+    container_name: binjwa-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - backend
+    networks:
+      - binjwa-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  binjwa-network:
+    driver: bridge

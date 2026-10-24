@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCurrency } from '../context/CurrencyContext';
 import { usageLogAPI, modelsAPI, employeeAPI, chatAPI } from '../services/api';
-import { UserCircle, Zap, Activity, Clock, Play, CheckCircle, Terminal, Bot, Send } from 'lucide-react';
+import { UserCircle, Zap, Activity, Clock, Play, CheckCircle, Terminal, Bot, Send, Calculator } from 'lucide-react';
+import MediaCostEstimator from '../components/MediaCostEstimator';
 
 export default function EmployeeDashboard() {
   const { formatCurrency } = useCurrency();
@@ -12,6 +13,7 @@ export default function EmployeeDashboard() {
   const [running, setRunning] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [employeeInfo, setEmployeeInfo] = useState(null);
+  const [showEstimator, setShowEstimator] = useState(false);
 
   // Chat state
   const [messages, setMessages] = useState(() => {
@@ -150,6 +152,11 @@ export default function EmployeeDashboard() {
           </div>
           <h1 className="page-title" style={{ marginTop: '4px' }}>AI Live Chat & Telemetry</h1>
           <p className="page-subtitle">Chat with real LLMs via Binjwa Gateway and monitor exact token deduction.</p>
+        </div>
+        <div>
+          <button className="btn" onClick={() => setShowEstimator(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Calculator size={18} /> Media Cost Estimator
+          </button>
         </div>
       </div>
 
@@ -336,6 +343,8 @@ export default function EmployeeDashboard() {
           </div>
         </div>
       </div>
+
+      {showEstimator && <MediaCostEstimator onClose={() => setShowEstimator(false)} />}
     </div>
   );
 }

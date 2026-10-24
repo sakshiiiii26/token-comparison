@@ -8,7 +8,7 @@ token_pools_collection = db["token_pools"]
 usage_logs_collection = db["usage_logs"]
 client_admins_collection = db["client_admins"]
 tokens_collection = db["tokens"]
-
+notifications_collection = db["notifications"]
 
 
 platform_wallets_collection = db['platform_wallets']

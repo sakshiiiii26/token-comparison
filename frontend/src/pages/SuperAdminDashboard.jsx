@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { superAdminAPI, clientAdminAPI } from '../services/api';
-import { Layers, Building, Users, Activity, Plus, Trash2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Layers, Building, Users, Activity, Plus, Trash2, CheckCircle, AlertCircle, RefreshCw, Calculator } from 'lucide-react';
+import MediaCostEstimator from '../components/MediaCostEstimator';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function SuperAdminDashboard() {
 
   const [planRequests, setPlanRequests] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showEstimator, setShowEstimator] = useState(false);
   const [formData, setFormData] = useState({ company_name: '', company_email: '', company_phone: '', address: '' });
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [error, setError] = useState(null);
@@ -92,6 +94,9 @@ export default function SuperAdminDashboard() {
           <p className="page-subtitle">Real-Time Platform Gateway Overview & Client Management</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn btn-secondary" onClick={() => setShowEstimator(true)} title="Media Cost Estimator">
+            <Calculator size={18} /> Estimator
+          </button>
           <button className="btn btn-secondary" onClick={fetchData} title="Refresh Data">
             <RefreshCw size={18} />
           </button>
@@ -313,6 +318,8 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
       )}
+      
+      {showEstimator && <MediaCostEstimator onClose={() => setShowEstimator(false)} />}
     </div>
   );
 }
